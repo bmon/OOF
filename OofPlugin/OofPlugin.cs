@@ -50,6 +50,7 @@ public sealed class OofPlugin : IDalamudPlugin
 
         Dalamud.PluginInterface.UiBuilder.Draw += DrawUI;
         Dalamud.PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUI;
+        Dalamud.PluginInterface.UiBuilder.OpenMainUi += ToggleConfigUI;
         Dalamud.Framework.Update += FrameworkOnUpdate;
 
         Dalamud.CommandManager.AddHandler(oofCommand, new CommandInfo(OnCommand)
@@ -102,12 +103,12 @@ public sealed class OofPlugin : IDalamudPlugin
     /// </summary>
     private void CheckDeath()
     {
-
         if (!Configuration.OofOnDeathBattle && Dalamud.Condition[ConditionFlag.InCombat]) return;
 
         // if not in party
         if (Configuration.OofOnDeathSelf && (Dalamud.PartyList == null || Dalamud.PartyList.Length == 0))
         {
+
             DeadPlayersList.AddRemoveDeadPlayer(Dalamud.ClientState.LocalPlayer!);
             return;
         }

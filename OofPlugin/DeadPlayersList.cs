@@ -23,14 +23,16 @@ namespace OofPlugin
         /// <param name="condition">extra condition</param>
         private void AddRemoveDeadPlayer(DeadPlayer deadPlayer, uint currentHp, uint objectId, bool condition = true)
         {
+            Dalamud.Log.Debug("AddRemoveDeadPlayer - objId: {objId} - currentHp - {currentHp} - condition - {condition}", objectId, currentHp, condition);
             if (currentHp == 0 && !DeadPlayers.Any(x => x.PlayerId == objectId) && condition)
             {
+                Dalamud.Log.Debug("AddRemoveDeadPlayer_inner adding dead player: {objId}", objectId);
                 DeadPlayers.Add(new DeadPlayer { PlayerId = objectId });
             }
             else if (currentHp != 0 && DeadPlayers.Any(x => x.PlayerId == objectId))
             {
+                Dalamud.Log.Debug("AddRemoveDeadPlayer_inner removing (un)dead player: {objId}", objectId);
                 DeadPlayers.RemoveAll(x => x.PlayerId == objectId);
-
             }
         }
         /// <summary>

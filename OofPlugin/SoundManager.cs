@@ -4,6 +4,7 @@ using System.IO;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
+using static Lumina.Data.Parsing.Layer.LayerCommon;
 
 namespace OofPlugin;
 
@@ -124,26 +125,29 @@ internal class SoundManager : IDisposable
 
             if (DeadPlayersList == null) continue;
             if (DeadPlayersList.DeadPlayers.Count == 0) continue;
-            if (Dalamud.ClientState!.LocalPlayer! == null) continue;
-            foreach (var player in DeadPlayersList.DeadPlayers)
-            {
-                if (player.DidPlayOof) continue;
-                float volume = 1f;
-                if (Configuration.DistanceBasedOof && player.Distance != Dalamud.ClientState!.LocalPlayer!.Position)
+
+            // Use RunOnFrameworkThread to access LocalPlayer on the main thread
+            await Dalamud.Framework.RunOnFrameworkThread(() => {
+                if (Dalamud.ClientState?.LocalPlayer == null) return;
+
+                foreach (var player in DeadPlayersList.DeadPlayers)
                 {
-                    var dist = 0f;
-                    if (player.Distance != Vector3.Zero) dist = Vector3.Distance(Dalamud.ClientState!.LocalPlayer!.Position, player.Distance);
-                    volume = VolumeFromDist(dist);
+                    if (player.DidPlayOof) continue;
+                    float volume = 1f;
+                    if (Configuration.DistanceBasedOof && player.Distance != Dalamud.ClientState.LocalPlayer.Position)
+                    {
+                        var dist = 0f;
+                        if (player.Distance != Vector3.Zero) dist = Vector3.Distance(Dalamud.ClientState.LocalPlayer.Position, player.Distance);
+                        volume = VolumeFromDist(dist);
+                    }
+                    Play(token, volume);
+                    player.DidPlayOof = true;
+                    break;
                 }
-                Play(token, volume);
-                player.DidPlayOof = true;
-                break;
-
-            }
-
+            });
         }
-
     }
+
     public float VolumeFromDist(float dist, float distMax = 30)
     {
         if (dist > distMax) dist = distMax;
